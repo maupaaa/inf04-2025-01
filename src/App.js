@@ -1,11 +1,13 @@
-import { useState } from 'react'
-import './App.css'
-import 'bootstrap/dist/css/bootstrap.css'
+import { useState } from 'react';
+import './App.css';
+import 'bootstrap/dist/css/bootstrap.css';
 
 function App() {
-  const [showAnimals, setShowAnimals] = useState(true)
-  const [showFlowers, setShowFlowers] = useState(true)
-  const [showCars, setShowCars] = useState(true)
+  const [showAnimals, setShowAnimals] = useState(true);
+  const [showFlowers, setShowFlowers] = useState(true);
+  const [showCars, setShowCars] = useState(true);
+  const [enlargedPhoto, setEnlargedPhoto] = useState(null);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
   const [photos, setPhotos] = useState([
     { id: 0, alt: "Mak", filename: "obraz1.jpg", category: 1, downloads: 35 },
@@ -20,9 +22,9 @@ function App() {
     { id: 9, alt: "Foksterier", filename: "obraz10.jpg", category: 2, downloads: 22 },
     { id: 10, alt: "Szczeniak", filename: "obraz11.jpg", category: 2, downloads: 12 },
     { id: 11, alt: "Garbus", filename: "obraz12.jpg", category: 3, downloads: 321 }
-  ])
+  ]);
 
-  const filtredPhotos = photos.filter(p => {
+  const filteredPhotos = photos.filter((p) => {
     if (p.category === 1 && showFlowers) {
       return true;
     } else if (p.category === 2 && showAnimals) {
@@ -30,46 +32,134 @@ function App() {
     } else if (p.category === 3 && showCars) {
       return true;
     }
-
     return false;
-  })
-  function downloadsUpdate(id) {
-    const photosNew = [...photos]
+  });
 
+  const currentPhoto = filteredPhotos[currentPhotoIndex];
+
+  const nextPhoto = () => {
+    setCurrentPhotoIndex((prevIndex) =>
+      prevIndex === filteredPhotos.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const prevPhoto = () => {
+    setCurrentPhotoIndex((prevIndex) =>
+      prevIndex === 0 ? filteredPhotos.length - 1 : prevIndex - 1
+    );
+  };
+
+  function downloadsUpdate(id) {
+    const photosNew = [...photos];
     for (const p of photosNew) {
       if (p.id === id) {
         p.downloads++;
         break;
       }
     }
-    setPhotos(photosNew)
+    setPhotos(photosNew);
   }
+
+  function enlarge(id) {
+    setEnlargedPhoto(enlargedPhoto === id ? null : id);
+  }
+
   return (
     <>
-      <h1>Kategorie zdjęć</h1>
-      <div className="form-check form-switch form-check-inline">
-        <input type="checkbox" name="kwiaty" id="kwiaty" className="form-check-input" checked={showFlowers}onChange={()=>setShowFlowers(!showFlowers)}></input>
-          <label for="kwiaty" className="form-check-label">Kwiaty</label>
-      </div>
-      <div className="form-check form-switch form-check-inline">
-        <input type="checkbox" name="zwierzeta" id="zwierzeta" className="form-check-input" checked={showAnimals}onChange={()=>setShowAnimals(!showAnimals)}></input>
-          <label for="zwierzeta" className="form-check-label">Zwierzeta</label>
-      </div>
-      <div className="form-check form-switch form-check-inline">
-        <input type="checkbox" name="samochody" id="samochody" className="form-check-input" checked={showCars}onChange={()=>setShowCars(!showCars  )}></input>
-          <label for="samochody" className="form-check-label">Samochody</label>
-      </div>
-      <div className='row'>
-        {filtredPhotos.map(p=>(
-          <div key={p.id} className='col'>
-            <img  src={`/assets/${p.filename}`} alt={p.alt} className='rounded' style={{margin:"5px"}}></img>
-            <h4>pobrań: {p.downloads}</h4>
-            <button className='btn btn-success' onClick={()=> downloadsUpdate(p.id)}>Pobierz</button>
-          </div>
-        ))}
-      </div>
-    </>
+      <h1 className="text-center my-4">Kategorie zdjęć</h1>
 
+      <div className="d-flex justify-content-center mb-4">
+        <div className="form-check form-switch mx-2">
+          <input
+            type="checkbox"
+            name="kwiaty"
+            id="kwiaty"
+            className="form-check-input"
+            checked={showFlowers}
+            onChange={() => setShowFlowers(!showFlowers)}
+          />
+          <label htmlFor="kwiaty" className="form-check-label">
+            Kwiaty
+          </label>
+        </div>
+        <div className="form-check form-switch mx-2">
+          <input
+            type="checkbox"
+            name="zwierzeta"
+            id="zwierzeta"
+            className="form-check-input"
+            checked={showAnimals}
+            onChange={() => setShowAnimals(!showAnimals)}
+          />
+          <label htmlFor="zwierzeta" className="form-check-label">
+            Zwierzeta
+          </label>
+        </div>
+        <div className="form-check form-switch mx-2">
+          <input
+            type="checkbox"
+            name="samochody"
+            id="samochody"
+            className="form-check-input"
+            checked={showCars}
+            onChange={() => setShowCars(!showCars)}
+          />
+          <label htmlFor="samochody" className="form-check-label">
+            Samochody
+          </label>
+        </div>
+      </div>
+
+      {currentPhoto && (
+        <div className="d-flex justify-content-center position-relative">
+          <button
+            className="btn btn-outline-dark position-absolute start-0 top-50 translate-middle-y"
+            onClick={prevPhoto}
+          >
+            &#10094;
+          </button>
+          <div className="d-flex flex-column align-items-center">
+            <img
+              src={`/assets/${currentPhoto.filename}`}
+              alt={currentPhoto.alt}
+              className={`rounded ${enlargedPhoto === currentPhoto.id ? 'enlarged' : ''}`}
+              style={{
+                margin: '5px',
+                width: enlargedPhoto === currentPhoto.id ? '500px' : '300px',
+                transition: 'width 0.3s ease-in-out',
+              }}
+            />
+            <div className="mt-2">
+              <h4>Pobrania: {currentPhoto.downloads}</h4>
+              <button
+                className="btn btn-success mx-1"
+                onClick={() => downloadsUpdate(currentPhoto.id)}
+              >
+                Pobierz
+              </button>
+              <button
+                className="btn btn-primary mx-1"
+                onClick={() => enlarge(currentPhoto.id)}
+              >
+                {enlargedPhoto === currentPhoto.id ? 'Zwiń' : 'Powiększ'}
+              </button>
+            </div>
+          </div>
+          <button
+            className="btn btn-outline-dark position-absolute end-0 top-50 translate-middle-y"
+            onClick={nextPhoto}
+          >
+            &#10095;
+          </button>
+        </div>
+      )}
+
+      {filteredPhotos.length === 0 && (
+        <div className="text-center mt-4">
+          <p>Brak zdjęć w tej kategorii. Wybierz inną kategorię!</p>
+        </div>
+      )}
+    </>
   );
 }
 

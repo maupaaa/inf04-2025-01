@@ -23,7 +23,12 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
-
+.enlarged {
+  transform: scale(1.5);
+}
+img{
+  scale: (1.25);
+}
 .App-link {
   color: #61dafb;
 }
@@ -35,4 +40,8 @@
   to {
     transform: rotate(360deg);
   }
+}
+.position-relative{
+  justify-content: center;
+  display: flex;
 }
